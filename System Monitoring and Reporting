@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Function to get system resource usage and save it to a text file
+get_system_usage() {
+  current_time=$(date)
+  cpu_usage=$(top -b -n 1 | grep "%Cpu(s)" | awk '{print $2}')
+  memory_usage=$(free -m | awk '/Mem:/ {print $3}')
+
+  # Create a report message
+  report="System Monitoring Report
+
+  Current Time: $current_time
+  CPU Usage: $cpu_usage%
+  Memory Usage: $memory_usage MB"
+
+  # Save the report to a text file
+  echo "$report" > system_report.txt
+  echo "System usage report saved to system_report.txt"
+}
+
+# Function to display system logs
+show_system_logs() {
+  clear
+  echo "System Logs"
+  echo "-----------"
+  journalctl
+  echo "Press Enter to return to the menu..."
+  read
+}
+
+# Function to display a menu and run the selected option
+display_menu() {
+  clear
+  echo "System Monitoring Script"
+  echo "------------------------"
+  echo "1. Get System Usage"
+  echo "2. Display Disk Usage"
+  echo "3. List Network Connections"
+  echo "4. List Running Processes (Ctrl-X to Cancel)"
+  echo "5. System Load"
+  echo "6. Security Information"
+  echo "7. Services and Daemons"
+  echo "8. Show System Logs (Ctrl-X to Cancel)"
+  echo "9. System Uptime"
+  echo "10. Exit"
+  echo -n "Enter your choice: "
+
+  # Enable Ctrl-X to cancel option 4 and 8
+  stty intr ^X
+
+  read choice
+  case $choice in
+    1) get_system_usage; read -p "Press Enter to return to the menu..."; display_menu ;;
+    2) df -h; read -p "Press Enter to return to the menu..."; display_menu ;;
+    3) netstat -tuln; read -p "Press Enter to return to the menu..."; display_menu ;;
+    4) trap "" INT  # Disable Ctrl-C
+       top; trap INT; display_menu ;;
+    5) uptime; read -p "Press Enter to return to the menu..."; display_menu ;;
+    6) # Add security information commands
+       read -p "Press Enter to return to the menu..."; display_menu ;;
+    7) systemctl list-units --type=service > services_and_daemons.txt
+       echo "Service and daemon list saved to services_and_daemons.txt"
+       read -p "Press Enter to return to the menu..."; display_menu ;;
+    8) trap "" INT  # Disable Ctrl-C
+       show_system_logs; trap INT; display_menu ;;
+    9) uptime; read -p "Press Enter to return to the menu..."; display_menu ;;
+    10) exit ;;
+    *) echo "Invalid option. Press Enter to return to the menu..."; read; display_menu ;;
+  esac
+}
+
+# Main script
+main() {
+  display_menu
+}
+
+# Run the script
+main
